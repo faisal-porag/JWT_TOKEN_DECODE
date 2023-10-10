@@ -104,8 +104,11 @@ func DecodeServiceAccessAuthToken(req *http.Request, tokenSecret string) (*Custo
 }
 ```
 
+---
 
-```sh
+### Another Token Decode Example 
+
+```go
 var (
 	ErrInvalidAuthorizationHeader = errors.New("invalid or missing authorization header")
 	ErrInvalidTokenType           = errors.New("invalid token type")
