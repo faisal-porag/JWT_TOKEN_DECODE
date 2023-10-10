@@ -103,3 +103,52 @@ func DecodeServiceAccessAuthToken(req *http.Request, tokenSecret string) (*Custo
 	return info, err
 }
 ```
+
+
+```sh
+var (
+	ErrInvalidAuthorizationHeader = errors.New("invalid or missing authorization header")
+	ErrInvalidTokenType           = errors.New("invalid token type")
+	ErrInvalidToken               = errors.New("invalid token")
+)
+
+type UserInformationClaims struct {
+	jwt.RegisteredClaims
+	Id                          int64 	`json:"id"`
+	Exp                         int64       `json:"exp"`
+	CreatedAt                   string      `json:"createdAt"`
+	Iat                         int64       `json:"iat"`
+}
+
+
+func GetUserInfoFromAccessToken(
+	req *http.Request,
+	accessTokenSecret string,
+	s *state.State,
+) (*jwt_token.UserInformationClaims, error) {
+	authorizationHeader := req.Header.Get("Authorization")
+	var parts []string
+	parts = strings.Split(authorizationHeader, " ")
+
+	if !slices.Contains(AllowedTokenTypes, strings.ToLower(parts[0])) {
+		return nil, ErrInvalidTokenType
+	}
+
+	token, err := jwt.ParseWithClaims(parts[1], &jwt_token.UserInformationClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(accessTokenSecret), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(*jwt_token.UserInformationClaims); ok && token.Valid {
+		return claims, nil
+	} else {
+		return nil, ErrInvalidToken
+	}
+}
+
+```
+
+
+
